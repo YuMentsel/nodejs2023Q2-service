@@ -36,10 +36,27 @@ export class ArtistService {
     return updatedArtist;
   }
 
-  remove(id: string): null | void {
+  remove(id: string): void {
     if (!this.databaseService.artists.isExist(id)) {
       throw new NotFoundException(`Artist ${id} not found`);
     }
-    return this.databaseService.artists.remove(id, null);
+    this.databaseService.artists.remove(id);
+    this.removeArtistById(id);
+  }
+
+  removeArtistById(artistId: string) {
+    const albums = this.databaseService.albums.getAll();
+    albums.forEach((album) => {
+      if (album.artistId === artistId) {
+        album.artistId = null;
+      }
+    });
+
+    const tracks = this.databaseService.tracks.getAll();
+    tracks.forEach((track) => {
+      if (track.artistId === artistId) {
+        track.artistId = null;
+      }
+    });
   }
 }

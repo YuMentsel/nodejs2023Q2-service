@@ -17,9 +17,8 @@ export class Repository<T> {
     return this.items.get(id);
   }
 
-  remove(id: string, returnVal?: null): void | null {
+  remove(id: string): void {
     this.items.delete(id);
-    if (returnVal) return returnVal;
   }
 
   isExist(id: string): boolean {
