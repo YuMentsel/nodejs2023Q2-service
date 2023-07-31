@@ -3,10 +3,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { plainToClass } from 'class-transformer';
 import { DatabaseService } from '../database/database.service';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 
@@ -29,19 +29,24 @@ export class UserService {
   }
 
   findAll(): User[] {
-    return this.databaseService.users.getAll();
+    const users = this.databaseService.users.getAll();
+    return users.map((user) => plainToClass(User, user));
   }
 
   findOne(id: string): User {
     if (!this.databaseService.users.isExist(id)) {
       throw new NotFoundException(`User ${id} not found`);
     }
-    return this.databaseService.users.getOne(id);
+    const user = this.databaseService.users.getOne(id);
+    return plainToClass(User, user);
   }
 
   update(id: string, dto: UpdateUserDto): User {
     const { oldPassword, newPassword } = dto;
-    const user = this.findOne(id);
+    if (!this.databaseService.users.isExist(id)) {
+      throw new NotFoundException(`User ${id} not found`);
+    }
+    const user = this.databaseService.users.getOne(id);
 
     if (user.password !== oldPassword) {
       throw new ForbiddenException('Previous password is wrong');

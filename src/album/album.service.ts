@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateAlbumDto } from './dto/create-album.dto';
 import { v4 as uuidv4 } from 'uuid';
+import { plainToClass } from 'class-transformer';
 import { DatabaseService } from '../database/database.service';
+import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { Album } from './entities/album.entity';
 
@@ -11,7 +12,7 @@ export class AlbumService {
 
   create(dto: CreateAlbumDto): Album {
     const id = uuidv4();
-    const newAlbum: Album = { artistId: null, id, ...dto };
+    const newAlbum: Album = plainToClass(Album, { artistId: null, id, ...dto });
 
     this.databaseService.albums.create(id, newAlbum);
     return newAlbum;
@@ -30,7 +31,7 @@ export class AlbumService {
 
   update(id: string, dto: UpdateAlbumDto): Album {
     const album = this.findOne(id);
-    const updatedAlbum = { ...album, ...dto };
+    const updatedAlbum = plainToClass(Album, { ...album, ...dto });
 
     this.databaseService.albums.create(id, updatedAlbum);
     return updatedAlbum;
@@ -41,5 +42,20 @@ export class AlbumService {
       throw new NotFoundException(`Album ${id} not found`);
     }
     this.databaseService.albums.remove(id);
+    this.removeAlbumById(id);
+    if (this.databaseService.favorites.isExist(id, 'albums'))
+      this.databaseService.favorites.remove(id, 'albums');
+  }
+
+  removeAlbumById(albumId: string) {
+    const tracks = this.databaseService.tracks.getAll();
+    tracks.forEach((track) => {
+      if (track.albumId === albumId) {
+        this.databaseService.tracks.create(track.id, {
+          ...track,
+          albumId: null,
+        });
+      }
+    });
   }
 }

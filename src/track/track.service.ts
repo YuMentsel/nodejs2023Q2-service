@@ -1,10 +1,8 @@
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { CreateTrackDto } from './dto/create-track.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
+import { plainToClass } from 'class-transformer';
 import { DatabaseService } from '../database/database.service';
+import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { Track } from './entities/track.entity';
 
@@ -14,12 +12,20 @@ export class TrackService {
 
   create(dto: CreateTrackDto): Track {
     const id = uuidv4();
-    const newTrack: Track = {
+    const artistId = this.databaseService.artists.isExist(dto.artistId)
+      ? dto.artistId
+      : null;
+
+    const albumId = this.databaseService.albums.isExist(dto.albumId)
+      ? dto.albumId
+      : null;
+
+    const newTrack: Track = plainToClass(Track, {
       id,
       ...dto,
-      artistId: null,
-      albumId: null,
-    };
+      artistId,
+      albumId,
+    });
 
     this.databaseService.tracks.create(id, newTrack);
     return newTrack;
@@ -38,7 +44,7 @@ export class TrackService {
 
   update(id: string, dto: UpdateTrackDto): Track {
     const track = this.findOne(id);
-    const updatedTrack = { ...track, ...dto };
+    const updatedTrack = plainToClass(Track, { ...track, ...dto });
 
     this.databaseService.tracks.create(id, updatedTrack);
     return updatedTrack;
@@ -49,5 +55,7 @@ export class TrackService {
       throw new NotFoundException(`Track ${id} not found`);
     }
     this.databaseService.tracks.remove(id);
+    if (this.databaseService.favorites.isExist(id, 'tracks'))
+      this.databaseService.favorites.remove(id, 'tracks');
   }
 }
