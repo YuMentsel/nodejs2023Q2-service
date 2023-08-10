@@ -1,8 +1,27 @@
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { SwaggerModule, OpenAPIObject } from '@nestjs/swagger';
+import { load } from 'js-yaml';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.listen(4000);
+  const configService = app.get(ConfigService);
+  const port = configService.get('PORT', 4000);
+
+  const file = await readFile(join(__dirname, '..', 'doc', 'api.yaml'), 'utf8');
+  const document = load(file) as OpenAPIObject;
+  SwaggerModule.setup('doc', app, document);
+
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+  await app.listen(port, () => {
+    console.log(
+      `Server is running on port ${port}. Go to http://localhost:${port}`,
+    ),
+      console.log(`OpenAPI: http://localhost:${port}/doc`);
+  });
 }
 bootstrap();
