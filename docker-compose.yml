@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  home-library:
+    container_name: home-library
+    restart: always
+    build:
+      context: .
+    volumes:
+      - ./src:/app/src
+    ports:
+      - ${PORT}:${PORT}
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    environment:
+      PORT: ${PORT}
+    networks:
+      - home-library-network
+
+  postgres:
+    container_name: postgres
+    image: postgres:15.3-alpine3.18
+    restart: always
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - home-library-network
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    command:
+      [
+        'postgres',
+        '-c',
+        'logging_collector=on',
+        '-c',
+        'log_directory=./logs',
+        '-c',
+        'log_filename=postgresql.log',
+        '-c',
+        'log_statement=all',
+      ]
+
+networks:
+  home-library-network:
+    driver: bridge
+
+volumes:
+  pgdata:
