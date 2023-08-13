@@ -5,6 +5,7 @@ services:
     container_name: home-library
     restart: always
     build:
+      dockerfile: Dockerfile
       context: .
       target: development
     volumes:
@@ -17,12 +18,13 @@ services:
       - postgresdb
     environment:
       PORT: ${PORT}
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?schema=public"    
     networks:
       - home-library-network
 
   postgresdb:
     container_name: postgresdb
-    image: postgres:15.3-alpine3.18
+    build: ./postgres/
     restart: always
     ports:
       - ${POSTGRES_PORT}:${POSTGRES_PORT}
