@@ -6,6 +6,7 @@ services:
     restart: always
     build:
       context: .
+      target: development
     volumes:
       - ./src:/app/src
     ports:
@@ -13,14 +14,14 @@ services:
     env_file:
       - .env
     depends_on:
-      - postgres
+      - postgresdb
     environment:
       PORT: ${PORT}
     networks:
       - home-library-network
 
-  postgres:
-    container_name: postgres
+  postgresdb:
+    container_name: postgresdb
     image: postgres:15.3-alpine3.18
     restart: always
     ports:
