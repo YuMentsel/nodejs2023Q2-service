@@ -16,7 +16,7 @@ cd nodejs2023Q2-service
 ```
 
 ```
-git checkout part-1
+git checkout part-2/docker-db-orm
 ```
 
 ## Installing NPM modules
@@ -31,27 +31,34 @@ npm install
 cp .env.example .env
 ```
 
-## Running application
+## Start Docker containers
 
 ```
-npm run start
+npm run docker
 ```
 or
 
 ```
-npm run start:dev
+docker compose up
 ```
 
-After starting the app on port (4000 as default) you can open
-in your browser OpenAPI documentation by typing http://localhost:4000/doc/.
-For more information about OpenAPI/Swagger please visit https://swagger.io/.
+Wait... ☕
 
-## Testing
+Run Prisma ORM migrations
+```
+ npm run migrate:dev
+```
 
-After application running open new terminal and enter:
+Run tests
 
 ```
 npm run test
+```
+
+Run scan security vulnerabilities
+
+```
+npm run docker:scan
 ```
 
 ### Auto-fix and format
@@ -63,6 +70,10 @@ npm run lint
 ```
 npm run format
 ```
+
+After starting the app on port (4000 as default) you can open
+in your browser OpenAPI documentation by typing http://localhost:4000/doc/.
+For more information about OpenAPI/Swagger please visit https://swagger.io/.
 
 ### Debugging in VSCode
 
