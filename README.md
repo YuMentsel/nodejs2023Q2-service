@@ -44,6 +44,8 @@ docker compose up
 
 Wait... ☕
 
+In case of problems, either restart `npm run docker` or clean data in the Docker Desktop.
+
 Run Prisma ORM migrations
 ```
  npm run migrate:dev
