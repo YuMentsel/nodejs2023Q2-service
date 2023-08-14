@@ -2,7 +2,6 @@ version: '3.8'
 
 services:
   home-library:
-    container_name: home-library
     restart: always
     build:
       dockerfile: Dockerfile
@@ -23,7 +22,6 @@ services:
       - home-library-network
 
   postgresdb:
-    container_name: postgresdb
     build: ./postgres/
     restart: always
     ports:
