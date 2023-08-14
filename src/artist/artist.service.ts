@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { plainToClass } from 'class-transformer';
 import { PrismaService } from '../database/prisma.service';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
@@ -10,18 +11,19 @@ export class ArtistService {
 
   async create(dto: CreateArtistDto): Promise<Artist> {
     const newArtist = await this.prisma.artist.create({ data: dto });
-    return newArtist;
+    return plainToClass(Artist, newArtist);
   }
 
   async findAll(): Promise<Artist[]> {
-    return await this.prisma.artist.findMany();
+    const artists = await this.prisma.artist.findMany();
+    return artists.map((artist) => plainToClass(Artist, artist));
   }
 
   async findOne(id: string): Promise<Artist> {
     const artist = await this.prisma.artist.findUnique({ where: { id } });
     if (!artist) throw new NotFoundException(`Artist ${id} not found`);
 
-    return artist;
+    return plainToClass(Artist, artist);
   }
 
   async update(id: string, dto: UpdateArtistDto): Promise<Artist> {
@@ -33,7 +35,7 @@ export class ArtistService {
       data: dto,
     });
 
-    return updatedArtist;
+    return plainToClass(Artist, updatedArtist);
   }
 
   async remove(id: string): Promise<void> {
