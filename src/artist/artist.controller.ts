@@ -20,31 +20,35 @@ export class ArtistController {
   constructor(private readonly artistService: ArtistService) {}
 
   @Post()
-  create(@Body() dto: CreateArtistDto): Artist {
-    return this.artistService.create(dto);
+  async create(@Body() dto: CreateArtistDto): Promise<Artist> {
+    return await this.artistService.create(dto);
   }
 
   @Get()
-  findAll(): Artist[] {
-    return this.artistService.findAll();
+  async findAll(): Promise<Artist[]> {
+    return await this.artistService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string): Artist {
-    return this.artistService.findOne(id);
+  async findOne(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ): Promise<Artist> {
+    return await this.artistService.findOne(id);
   }
 
   @Put(':id')
-  update(
-    @Param('id', ParseUUIDPipe) id: string,
+  async update(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() dto: UpdateArtistDto,
-  ): Artist {
-    return this.artistService.update(id, dto);
+  ): Promise<Artist> {
+    return await this.artistService.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id', ParseUUIDPipe) id: string): void {
-    this.artistService.remove(id);
+  async remove(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ): Promise<void> {
+    await this.artistService.remove(id);
   }
 }
