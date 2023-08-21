@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -7,6 +7,8 @@ import { TrackModule } from './track/track.module';
 import { ArtistModule } from './artist/artist.module';
 import { AlbumModule } from './album/album.module';
 import { FavoritesModule } from './favorites/favorites.module';
+import { CustomLoggingModule } from './logging/logging.module';
+import { CustomLoggingMiddleware } from './logging/logging.middleware';
 
 @Module({
   imports: [
@@ -15,9 +17,14 @@ import { FavoritesModule } from './favorites/favorites.module';
     ArtistModule,
     AlbumModule,
     FavoritesModule,
+    CustomLoggingModule,
     ConfigModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(CustomLoggingMiddleware).exclude('/doc').forRoutes('*');
+  }
+}
