@@ -9,6 +9,21 @@ import { AppModule } from './app.module';
 import { ExceptionsFilter } from './filters/exceptions.filter';
 import { CustomLoggingService } from './logging/logging.service';
 
+const addLogListeners = (logger: CustomLoggingService): void => {
+  process.on('uncaughtException', (error: Error) => {
+    logger.error('Uncaught Exception:', error.stack);
+    process.exit(1);
+  });
+
+  process.on('unhandledRejection', (reason) => {
+    logger.error(
+      'Unhandled Rejection:',
+      reason instanceof Error ? reason.stack : String(reason),
+    );
+    process.exit(1);
+  });
+};
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
@@ -21,6 +36,8 @@ async function bootstrap() {
 
   const httpAdapterHost = app.get(HttpAdapterHost);
   app.useGlobalFilters(new ExceptionsFilter(httpAdapterHost));
+
+  addLogListeners(logger);
 
   const port = configService.get('PORT', 4000);
 
