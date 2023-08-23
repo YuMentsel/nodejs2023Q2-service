@@ -1,8 +1,8 @@
 import { ConsoleLogger, Injectable } from '@nestjs/common';
-import { parse, resolve } from 'path';
+import { resolve } from 'path';
 import { LogLevels, LogFiles } from './enums';
 import { existsSync } from 'fs';
-import { appendFile, writeFile, mkdir, stat } from 'fs/promises';
+import { writeFile, mkdir, stat } from 'fs/promises';
 
 @Injectable()
 export class CustomLoggingService extends ConsoleLogger {

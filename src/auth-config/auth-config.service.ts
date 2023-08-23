@@ -10,6 +10,10 @@ export class AuthConfigService {
     private readonly configService: ConfigService,
   ) {}
 
+  async getSalt(): Promise<number> {
+    return +this.configService.get<number>('CRYPT_SALT', 10);
+  }
+
   async generateTokens(payload: TokenPayloadDto): Promise<string[]> {
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: this.configService.get<string>('JWT_SECRET_KEY', 'secret123123'),

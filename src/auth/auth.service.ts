@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
+import { plainToClass } from 'class-transformer';
+import * as bcrypt from 'bcryptjs';
 import { Auth } from './entity/auth.entity';
 import { UserService } from '../user/user.service';
 import { User } from '../user/entities/user.entity';
@@ -14,24 +15,25 @@ export class AuthService {
     private readonly authConfigService: AuthConfigService,
   ) {}
 
-  async signup(dto: AuthDto): Promise<User> {
-    return await this.userService.create(dto);
+  async signup({ password, login }: AuthDto): Promise<User> {
+    const salt = await this.authConfigService.getSalt();
+    const hashedPass = await bcrypt.hash(password, salt);
+    return await this.userService.create({ login, password: hashedPass });
   }
 
   async login({ login: uLogin, password }: AuthDto): Promise<Auth> {
-    const isValidPassword = await this.userService.isValidPassword(
-      uLogin,
-      password,
-    );
-    if (!isValidPassword)
-      throw new ForbiddenException('Incorrect login or password');
+    const user = await this.userService.findOneByLogin(uLogin);
+    if (!user) throw new ForbiddenException('Incorrect login');
+
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) throw new ForbiddenException('Incorrect password');
 
     const { id: userId, login } = await this.userService.findOneByLogin(uLogin);
 
     const [accessToken, refreshToken] =
       await this.authConfigService.generateTokens({ userId, login });
 
-    return plainToInstance(Auth, { accessToken, refreshToken });
+    return plainToClass(Auth, { accessToken, refreshToken });
   }
 
   async refresh(dto: RefreshDto): Promise<Auth> {
@@ -41,7 +43,7 @@ export class AuthService {
     const [accessToken, refreshToken] =
       await this.authConfigService.generateTokens(payload);
 
-    return plainToInstance(Auth, {
+    return plainToClass(Auth, {
       accessToken,
       refreshToken,
     });
