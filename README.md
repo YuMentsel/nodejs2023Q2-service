@@ -54,7 +54,7 @@ Run Prisma ORM migrations
 Run tests
 
 ```
-npm run test
+npm run test:auth
 ```
 
 Run scan security vulnerabilities
