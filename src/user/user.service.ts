@@ -32,6 +32,10 @@ export class UserService {
     return plainToClass(User, user);
   }
 
+  async findOneByLogin(login: string) {
+    return await this.prisma.user.findUnique({ where: { login } });
+  }
+
   async update(id: string, dto: UpdateUserDto): Promise<User> {
     const { oldPassword, newPassword } = dto;
 
@@ -48,6 +52,11 @@ export class UserService {
     });
 
     return plainToClass(User, updatedUser);
+  }
+
+  async isValidPassword(login: string, password: string) {
+    const user = await this.findOneByLogin(login);
+    return password === user.password;
   }
 
   async remove(id: string): Promise<void> {
