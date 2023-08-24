@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import * as bcrypt from 'bcryptjs';
 import { Auth } from './entity/auth.entity';
@@ -36,16 +40,15 @@ export class AuthService {
     return plainToClass(Auth, { accessToken, refreshToken });
   }
 
-  async refresh(dto: RefreshDto): Promise<Auth> {
-    const payload = await this.authConfigService.verifyRefreshToken(
-      dto.refreshToken,
-    );
-    const [accessToken, refreshToken] =
-      await this.authConfigService.generateTokens(payload);
-
-    return plainToClass(Auth, {
-      accessToken,
-      refreshToken,
-    });
+  async refresh({ refreshToken: token }: RefreshDto): Promise<Auth> {
+    if (!token) throw new UnauthorizedException('No refresh token');
+    try {
+      const payload = await this.authConfigService.verifyRefreshToken(token);
+      const [accessToken, refreshToken] =
+        await this.authConfigService.generateTokens(payload);
+      return plainToClass(Auth, { accessToken, refreshToken });
+    } catch {
+      throw new ForbiddenException('Refresh token is invalid or expired');
+    }
   }
 }

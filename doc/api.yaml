@@ -149,7 +149,7 @@ paths:
         201:
           description: The user has been created.
         400:
-          description: Bad request
+          description: Bad request (no login or password, or they are not a strings)
   /auth/login:
     post:
       tags:
@@ -189,7 +189,7 @@ paths:
                     type: string
                     description: JWT Token
         400:
-          description: Bad request
+          description: Bad request (no login or password, or they are not a strings)
         403:
           description: Incorrect login or password
   /auth/refresh:
@@ -229,7 +229,7 @@ paths:
                     type: string
                     description: JWT Refresh Token
         401:
-          description: No refreshToken in body
+          description: No refresh token
         403:
           description: Refresh token is invalid or expired
   /user:
